@@ -20,6 +20,15 @@ A Telegram bot that monitors Instagram accounts and notifies you when their stat
 * Friendly emoji-rich messages and Markdown formatting
 
 ---
+## *Try It Out*
+
+<div align="center">
+  <a href="https://t.me/InstaAccReactivation_bot">
+    <img src="https://github.com/user-attachments/assets/ae45c8a9-38b1-4802-b98c-0140e57cc50b" width="220" style="border-radius:50px;"/>
+  </a>
+</div>
+
+---
 
 ## **How It Works** ⚙️
 

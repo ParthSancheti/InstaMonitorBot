@@ -41,6 +41,19 @@ A Telegram bot that monitors Instagram accounts and notifies you when their stat
 
 ---
 
+## 🎬 Preview
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/66b556c4-0d95-4d0d-a0dd-81c3197ee8a1" width="80%" alt="HeyMelody UI Demo" />
+  <br />
+    <img src="https://github.com/user-attachments/assets/432a51f7-b2df-496f-9389-1dfb6dc6aa44" width="80%" alt="HeyMelody UI Demo" />
+  <br />
+      <img src="https://github.com/user-attachments/assets/fd768c70-d367-4e03-b9d8-11748c7d46a1" width="80%" alt="HeyMelody UI Demo" />
+  <br />
+</p>
+
+---
+
 ## **Getting Started** 🚀
 
 ### **1. Create Your Telegram Bot**

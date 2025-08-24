@@ -1,0 +1,173 @@
+/** ========== CONFIG ========== **/
+const telegramBotToken  = "8186493762:AAG1bJ9D8Cty8LTsmQDI_kLFyT7HNd7UP8I"; // replace with your bot token
+const defaultDelay = 15; // default check interval in minutes
+/** ========================== **/
+
+/** ========= TELEGRAM MESSAGE UTILS ========= **/
+function sendTelegramMessage(chatId, message) {
+  const url = "https://api.telegram.org/bot" + telegramBotToken + "/sendMessage";
+  const payload = {
+    chat_id: chatId,
+    text: message,
+    parse_mode: "Markdown"
+  };
+  try {
+    const resp = UrlFetchApp.fetch(url, {
+      method: "post",
+      contentType: "application/json",
+      payload: JSON.stringify(payload)
+    });
+    Logger.log("Telegram response: " + resp.getContentText());
+  } catch (e) {
+    Logger.log("Telegram send error: " + e);
+  }
+}
+
+/** ========= USER DATA STORAGE ========= **/
+function loadUsersData() {
+  const raw = PropertiesService.getScriptProperties().getProperty("usersData");
+  return raw ? JSON.parse(raw) : {};
+}
+
+function saveUsersData(data) {
+  PropertiesService.getScriptProperties().setProperty("usersData", JSON.stringify(data));
+}
+
+/** ========= INSTAGRAM STATUS CHECK ========= **/
+function getInstagramStatus(username) {
+  const url = "https://www.instagram.com/" + username + "/";
+  let currentStatus = "UNKNOWN ⚠️";
+
+  try {
+    const response = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+    const code = response.getResponseCode();
+    const html = response.getContentText();
+
+    Logger.log(`Checking @${username} → HTTP: ${code}`);
+
+    if (code === 200) {
+      if (html.includes("loginForm")) {
+        currentStatus = "BLOCKED/LOGIN_REQUIRED ⚠️";
+      } else if (html.includes("This account is private")) {
+        currentStatus = "ACTIVE ✅";
+      } else {
+        currentStatus = "ACTIVE ✅";
+      }
+    } else if (code === 404) {
+      currentStatus = "DEACTIVATED ❌";
+    } else if (code === 429) {
+      currentStatus = "RATE_LIMITED ⚠️";
+    }
+
+  } catch (e) {
+    Logger.log("Instagram check error: " + e);
+    currentStatus = "UNKNOWN ⚠️";
+  }
+
+  Logger.log(`Status detected for @${username}: ${currentStatus}`);
+  return currentStatus;
+}
+
+/** ========= AUTO-CHECK FOR ALL USERS ========= **/
+function autoCheckAllUsers() {
+  const users = loadUsersData();
+  const now = new Date().getTime();
+
+  for (const chatId in users) {
+    const user = users[chatId];
+    if (!user.target) continue;
+
+    const lastCheck = user.lastCheck || 0;
+    const delay = (user.delay || defaultDelay) * 60 * 1000; // ms
+
+    if (now - lastCheck < delay) continue;
+
+    const status = getInstagramStatus(user.target);
+
+    if (status !== user.lastStatus) {
+      sendTelegramMessage(chatId, `🔔 Status change detected!\n@${user.target} is now ${status}`);
+      user.lastStatus = status;
+    }
+
+    user.lastCheck = now;
+  }
+
+  saveUsersData(users);
+}
+
+/** ========= TELEGRAM WEBHOOK HANDLER ========= **/
+function doPost(e) {
+  const data = JSON.parse(e.postData.contents);
+  const msg = data.message;
+  if (!msg || !msg.text) return;
+
+  const chatId = msg.chat.id;
+  const text = msg.text.trim();
+  const users = loadUsersData();
+  if (!users[chatId]) users[chatId] = {};
+
+  let user = users[chatId];
+
+  if (text.startsWith("/start")) {
+    const message = `👋 *Welcome to Insta Status Monitor Bot!*\n\n` +
+      `Here are the commands:\n` +
+      `/target <InstaID> → Set Instagram username to monitor\n` +
+      `/check → Immediately check status of your target\n` +
+      `/current → Show last known status\n` +
+      `/reset → Reset your target and data\n` +
+      `/delay <minutes> → Set auto-check interval (default 15 min)`;
+    sendTelegramMessage(chatId, message);
+
+  } else if (text.startsWith("/target")) {
+    const target = text.replace("/target", "").trim().replace("@", "");
+    if (!target) {
+      sendTelegramMessage(chatId, "⚠️ Usage: /target <InstagramUsername>");
+      return;
+    }
+
+    user.target = target;
+    user.lastStatus = null;
+    user.lastCheck = 0;
+    saveUsersData(users);
+
+    Logger.log(`User ${chatId} set target: ${target}`);
+    sendTelegramMessage(chatId, `🎯 Target set: @${target} ✅`);
+
+  } else if (text === "/check") {
+    if (!user.target) {
+      sendTelegramMessage(chatId, "ℹ️ No target set. Use /target <InstaID> first.");
+      return;
+    }
+    const status = getInstagramStatus(user.target);
+    user.lastStatus = status;
+    user.lastCheck = new Date().getTime();
+    saveUsersData(users);
+    sendTelegramMessage(chatId, `🔍 Forced check: @${user.target} is ${status}`);
+
+  } else if (text === "/current") {
+    if (!user.target) {
+      sendTelegramMessage(chatId, "ℹ️ No target set. Use /target <InstaID> first.");
+      return;
+    }
+    const status = user.lastStatus || "UNKNOWN ⚠️";
+    sendTelegramMessage(chatId, `📊 Current status of @${user.target}: ${status}`);
+
+  } else if (text.startsWith("/delay")) {
+    const parts = text.split(" ");
+    if (parts.length < 2 || isNaN(parts[1])) {
+      sendTelegramMessage(chatId, "⚠️ Usage: /delay <minutes>");
+      return;
+    }
+    user.delay = Math.max(1, parseInt(parts[1]));
+    saveUsersData(users);
+    sendTelegramMessage(chatId, `⏱ Auto-check interval set to ${user.delay} minutes.`);
+
+  } else if (text === "/reset") {
+    users[chatId] = {};
+    saveUsersData(users);
+    sendTelegramMessage(chatId, "♻️ Reset done. Use /target <InstaID> to set new account.");
+
+  } else {
+    sendTelegramMessage(chatId, "⚠️ Unknown command. Use /start to see available commands.");
+  }
+}

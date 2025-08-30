@@ -25,13 +25,13 @@ Admin-Only Commands:
 """
 
 # ========= PUT YOUR TELEGRAM BOT TOKEN HERE =========
-BOT_TOKEN = "8186493762:AAEalxCbH8n4IrzMAbK49nmhtfn-MTGhcdc"   # <-- REPLACE THIS
+BOT_TOKEN = ""   # <-- REPLACE THIS
 # Optional: where to store the SQLite file:
 DB_PATH = "./bot.db"
 # Default auto-check interval in minutes:
 DEFAULT_INTERVAL_MIN = 15
 # Admin Telegram user IDs:
-ADMIN_IDS = {7713086498}  # <-- REPLACE with your Telegram numeric ID(s)
+ADMIN_IDS = {}  # <-- REPLACE with your Telegram numeric ID(s)
 # ====================================================
 
 import asyncio
@@ -688,3 +688,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

@@ -18,7 +18,7 @@ Works for public & private accounts. Built with **Python** + **python-telegram-b
 * 🔍 Force check anytime with `/check`  
 * ♻️ Reset your account with `/reset`  
 * 📊 View last known status with `/current`  
-* Friendly emoji-rich messages and HTML-safe formatting  
+* Emoji-rich, simple, and user-friendly messages  
 
 ---
 
@@ -39,20 +39,17 @@ Works for public & private accounts. Built with **Python** + **python-telegram-b
   * [python-telegram-bot](https://github.com/python-telegram-bot/python-telegram-bot)  
   * [httpx](https://www.python-httpx.org/)  
   * [APScheduler](https://apscheduler.readthedocs.io/en/stable/)  
-* Uses Instagram **public web JSON API** (with fallback to HTML heuristics)  
-* SQLite database per user: stores target, last status, last check time, and interval  
-* Scheduler checks every X minutes (default 15) and notifies only on change  
+* Uses Instagram **public web JSON API** (with HTML fallback for reliability)  
+* Stores per-user settings in a **SQLite DB**  
+* Scheduler runs every X minutes (default 15) and notifies only if the status changes  
 
 ---
 
 ## 🎬 Preview
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/66b556c4-0d95-4d0d-a0dd-81c3197ee8a1" width="80%" alt="InstaMonitorBot Demo 1" />
+  <img src="https://github.com/user-attachments/assets/70bf2dc7-0b43-47e6-89c5-59e9d5e5d213" width="40%" alt="InstaMonitorBot Demo 1" />
   <br />
-  <img src="https://github.com/user-attachments/assets/432a51f7-b2df-496f-9389-1dfb6dc6aa44" width="80%" alt="InstaMonitorBot Demo 2" />
-  <br />
-  <img src="https://github.com/user-attachments/assets/fd768c70-d367-4e03-b9d8-11748c7d46a1" width="80%" alt="InstaMonitorBot Demo 3" />
 </p>
 
 ---
@@ -71,7 +68,7 @@ Works for public & private accounts. Built with **Python** + **python-telegram-b
 git clone https://github.com/<your-username>/InstaMonitorBot.git
 cd InstaMonitorBot
 python3 -m venv .venv
-source .venv/bin/activate   # (on Windows: .venv\Scripts\activate)
+source .venv/bin/activate   # on Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ````
 
@@ -93,11 +90,13 @@ BOT_TOKEN = "YOUR_TELEGRAM_BOT_TOKEN"
 
 ---
 
-### **4. Run**
+### **4. Run Locally**
 
 ```bash
 python main.py
 ```
+
+Start chatting with your bot on Telegram 🎉
 
 ---
 
@@ -114,35 +113,67 @@ python main.py
 
 ---
 
-## **24×7 Hosting Options** ☁️
+## **Deploy for 24×7 Hosting** ☁️
 
-### 🔹 PythonAnywhere (simplest)
+You have multiple options:
 
-* Upload `main.py`
-* Install requirements in Bash console
-* Use **Always-on tasks** (paid plan)
-* Command:
+### 🔹 PythonAnywhere (quickest)
 
-  ```
-  python3 /home/<yourusername>/main.py
-  ```
+* Free tier has CPU limits → bot slows down after \~100 seconds/day.
+* Works best if you upgrade.
 
-### 🔹 Railway / Render (webhook mode)
+**Steps:**
 
-* Fork repo → Deploy to Railway/Render
-* Add env vars:
+```bash
+python3 -m venv .venv
+pip install -r requirements.txt
+python3 main.py
+```
 
-  * `BOT_TOKEN` = your Telegram token
-  * `WEBHOOK_URL` = your app URL (`https://yourapp.up.railway.app`)
-* The bot switches to webhook mode automatically for 24/7 hosting.
+Run in **Always-on tasks** (paid plan).
 
 ---
 
-## **Notes** 📝
+### 🔹 Render (recommended free option)
 
-* Avoid spamming `/check` to prevent Instagram **rate-limits (429)**.
-* Private accounts are treated as **ACTIVE ✅** (if accessible).
-* Notifications are sent **only when the status changes**.
+* Free tier gives 750h/month (\~24×7).
+* Bots should be set up in **webhook mode** to save CPU.
+* Add **cron-job.org** to hit `/cron` endpoint every 15 minutes for checks.
+
+---
+
+### 🔹 Railway
+
+* Free tier: 500h/month.
+* Similar to Render, better for webhook mode.
+
+---
+
+### 🔹 Replit
+
+* Run with `keep_alive` (Flask) + [UptimeRobot](https://uptimerobot.com) pings.
+* Can sleep or reset sometimes.
+
+---
+
+## **Troubleshooting** 🔧
+
+* **Bot not replying?**
+
+  * Double-check your token.
+  * Ensure you started the chat with your bot in Telegram.
+  * If on Render/Railway, make sure webhook is set with:
+
+    ```
+    https://api.telegram.org/bot<YOUR_TOKEN>/setWebhook?url=<YOUR_APP_URL>/webhook/<SECRET>
+    ```
+* **Always UNKNOWN?**
+
+  * Instagram sometimes rate-limits → will retry next cycle.
+  * Private accounts are shown as **ACTIVE**.
+* **PythonAnywhere free tier very slow?**
+
+  * That’s a CPU quota issue — use Render/Railway instead.
 
 ---
 
@@ -159,4 +190,3 @@ MIT License © 2025
   <a href="https://wa.me/+918275994253"><img src="https://user-images.githubusercontent.com/74038190/235294019-40007353-6219-4ec5-b661-b3c35136dd0b.gif" height="40"/></a>
   <a href="https://t.me/parth_sancheti"><img src="https://github.com/user-attachments/assets/0e431c33-dfa6-463a-8b52-7e729de03b12" height="40"/></a>
 </p>
-```
